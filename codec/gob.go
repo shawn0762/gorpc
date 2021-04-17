@@ -3,6 +3,7 @@ package codec
 import (
 	"bufio"
 	"encoding/gob"
+	"fmt"
 	"io"
 )
 
@@ -19,6 +20,8 @@ type GobCodec struct {
 	enc *gob.Encoder
 }
 
+// 这里利用强制转换的特性确保GobCodec已经实现了codec.Codec接口
+// 如果GobCodec没有实现该接口，无法通过编译
 var _ Codec = (*GobCodec)(nil)
 
 // 按照要求，实现一个构造函数
@@ -33,19 +36,40 @@ func NewGobCodec(conn io.ReadWriteCloser) Codec {
 	}
 }
 
+// 关闭连接
 func (g *GobCodec) Close() error {
-	panic("implement me")
+	return g.conn.Close()
 }
 
+// 从连接中读取header内容
 func (g *GobCodec) ReadHeader(h *Header) error {
-	panic("implement me")
+	return g.dec.Decode(h)
 }
 
-func (g *GobCodec) ReadBody(h *Header) error {
-	panic("implement me")
+// 从连接中读取body内容
+func (g *GobCodec) ReadBody(v interface{}) error {
+	return g.dec.Decode(v)
 }
 
-func (g *GobCodec) Write(h *Header, v interface{}) error {
-	panic("implement me")
+func (g *GobCodec) Write(h *Header, v interface{}) (err error) {
+	defer func() {
+		// 将缓冲区的内容写入连接
+		// @todo 多次write才刷一次？
+		_ = g.buf.Flush()
+		if err != nil {
+			_ = g.Close()
+		}
+	}()
+
+	if err := g.enc.Encode(h); err != nil {
+		fmt.Println("Rpc codec: gob encoding header err: ", err)
+		return err
+	}
+
+	if err := g.enc.Encode(v); err != nil {
+		fmt.Println("Rpc codec: gob encoding body err: ", err)
+		return err
+	}
+	return nil
 }
 

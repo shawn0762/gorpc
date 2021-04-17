@@ -24,7 +24,7 @@ type Codec interface {
 	ReadHeader(*Header) error
 
 	// 读取请求体内容，写入Header实例
-	ReadBody(*Header) error
+	ReadBody(interface{}) error
 
 	// 写入响应内容：响应头、响应体
 	Write(*Header, interface{}) error
