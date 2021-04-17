@@ -45,9 +45,10 @@ type NewCodecFunc func(conn io.ReadWriteCloser) Codec
 var NewCodecFuncMap map[Type]NewCodecFunc
 
 func init() {
-
 	NewCodecFuncMap = make(map[Type]NewCodecFunc)
 
 	// 注册Gob编码器
 	NewCodecFuncMap[GobType] = NewGobCodec
+	// 注册Json编码器
+	NewCodecFuncMap[JsonType] = NewJsonCodec
 }
