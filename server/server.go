@@ -24,6 +24,7 @@ func NewServer() *Server {
 
 var DefaultServer = NewServer()
 
+// StartServer 启动server，监听客户端请求
 func StartServer() {
 	// 随便使用一个端口
 	l, err := net.Listen("tcp", ":0")
@@ -33,6 +34,7 @@ func StartServer() {
 	}
 
 	for {
+		// 等待客户端建立连接
 		conn, err := l.Accept()
 		if err != nil {
 			log.Println("Rpc server accept err: ", err.Error())
@@ -42,6 +44,7 @@ func StartServer() {
 	}
 }
 
+// Accept 接收并处理一个tcp连接
 // |<-- option -->|<-- header -->|<-- body -->|<-- header -->|<-- body -->|...|
 func (s *Server) Accept(conn net.Conn) {
 	defer func() { _ = conn.Close() }()

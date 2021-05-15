@@ -11,7 +11,7 @@ import (
 	"sync"
 )
 
-// 一个client实例，表示与服务器建立的一个connection
+// Client 一个client实例，表示与服务器建立的一个connection
 type Client struct {
 	// 此连接使用的编码器
 	cc codec.Codec
@@ -40,7 +40,7 @@ type Client struct {
 
 var ErrClientClosed = errors.New("client has been closed")
 
-// 关闭此客户端实例
+// Close 关闭此客户端实例
 func (c *Client) Close() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -52,7 +52,7 @@ func (c *Client) Close() error {
 	return nil
 }
 
-// 判断当前client实例是否可用
+// IsAvailable 判断当前client实例是否可用
 func (c *Client) IsAvailable() bool {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -215,7 +215,7 @@ func (c *Client) send(call *Call) {
 	}
 }
 
-// Go方法是异步请求方法，发出请求后不会等待服务器返回结果，直接返回一个call实例
+// Go 方法是异步请求方法，发出请求后不会等待服务器返回结果，直接返回一个call实例
 // 调用方需要通过监听通道自定等待调用结果
 func (c *Client) Go(serviceMethod string, args, reply interface{}, done chan *Call) *Call {
 	if done == nil {
@@ -236,7 +236,7 @@ func (c *Client) Go(serviceMethod string, args, reply interface{}, done chan *Ca
 	return call
 }
 
-// Call方法是同步请求的方法，发出请求后会阻塞，直到服务器返回结果
+// Call 方法是同步请求的方法，发出请求后会阻塞，直到服务器返回结果
 // 最终返回调用的错误状态
 func (c *Client) Call(serviceMethod string, args, reply interface{}) error {
 	call := <- c.Go(serviceMethod, args, reply, make(chan *Call, 1)).Done

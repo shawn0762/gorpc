@@ -1,29 +1,31 @@
 package main
 
 import (
-	"errors"
 	"fmt"
+	"runtime"
+	"time"
 )
 
 func main() {
+	//testSelect()
 
+	testNoRcvr()
 	//var m map[string]int
 	//m["shawn"] = 13
 
 	//slc := make([]string, 5)
 	//slc[0] = "shawn"
 
-	a := [5]string{"a", "b", "c", "d", "e"}
-
-	s := a[1:2:3]
-	s2 := a[1:2]
-	s3 := a[1:3]
-	s4 := a[2:3]
-	fmt.Println(s)
-	fmt.Println(s2)
-	fmt.Println(s3)
-	fmt.Println(s4)
-
+	//a := [5]string{"a", "b", "c", "d", "e"}
+	//
+	//s := a[1:2:3]
+	//s2 := a[1:2]
+	//s3 := a[1:3]
+	//s4 := a[2:3]
+	//fmt.Println(s)
+	//fmt.Println(s2)
+	//fmt.Println(s3)
+	//fmt.Println(s4)
 
 	// 声明一个切片，分配内存，但没有初始化
 	//var slc []string
@@ -44,8 +46,6 @@ func main() {
 	//fmt.Println(slc2)
 	//fmt.Println(slc3)
 	//fmt.Printf("%p", slc)
-
-
 
 	//t := &Test{}
 	//
@@ -89,31 +89,60 @@ func main() {
 	//}
 }
 
-func A(a map[string]int)  {
-	fmt.Println(a)
+func testSelect() {
+
+	var chs [3]chan int
+
+	for i := 0; i < 3; i++ {
+		c := make(chan int)
+		go func() {
+			time.Sleep(time.Second * 3)
+
+			select {
+			case c <- i:
+				fmt.Println("select success")
+			default:
+			}
+
+			fmt.Println("sleep end:", i)
+		}()
+		chs[i] = c
+	}
+
+	fmt.Println(runtime.NumGoroutine())
+	//select {
+	//case num := <-chs[0]:
+	//	fmt.Println("chan 0 get:", num)
+	//case num := <-chs[1]:
+	//	fmt.Println("chan 1 get:", num)
+	//case num := <-chs[2]:
+	//	fmt.Println("chan 2 get:", num)
+	//	//default:
+	//	//	fmt.Println("default")
+	//}
+	time.Sleep(time.Second * 5)
+	fmt.Println(runtime.NumGoroutine())
+	time.Sleep(time.Second * 5)
+	fmt.Println(runtime.NumGoroutine())
+	time.Sleep(time.Second * 5)
+	fmt.Println(runtime.NumGoroutine())
 }
 
-type Test struct {
-}
+func testNoRcvr() {
+	ch1 := make(chan bool)
+	ch2 := make(chan bool)
 
-type MyErr struct {
-	msg string
-}
+	go func() {
+		time.Sleep(time.Second * 3)
+		ch1 <- true
+	}()
 
-func (m MyErr) Error() string {
-	return m.msg
-}
-
-func (t Test) Hello(a string, b string) MyErr {
-	fmt.Println("hello: ", a, b)
-	return MyErr{"hello my err"}
-}
-
-func (t Test) World(a bool) error {
-	if a {
-		fmt.Println("world: true")
-		return nil
-	} else {
-		return errors.New("world: false")
+	select {
+	case <-ch1:
+		fmt.Println("receive from ch1")
+	case <-ch2:
+		fmt.Println("receive from ch2")
+	default:
+		fmt.Println("default")
 	}
 }
